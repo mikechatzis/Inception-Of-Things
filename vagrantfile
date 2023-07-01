@@ -1,0 +1,50 @@
+VAGRANTFILE_API_VERSION = "2"
+Vagrant.configure("2") do |config|
+  config.vm.define "mchatzipS" do |node1|
+    node1.vm.box = "bento/ubuntu-20.04"
+    node1.vm.hostname = "mchatzipS"
+    node1.vm.network "private_network", ip: "192.168.56.110"
+    node1.vm.provider "virtualbox" do |vb|
+      vb.name = "mchatzipS"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+    node1.vm.provision "shell", inline: <<-SHELL
+        sudo sed -i 's/^PasswordAuthentication.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+        sudo systemctl restart sshd
+        curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--node-ip 192.168.56.110 --node-name mchatzipS-controller" sh -
+        sudo kubectl create secret docker-registry ghcr-credentials \
+        --docker-server=ghcr.io \
+        --docker-username=mikechatzis \
+        --docker-password=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 \
+        --docker-email=chtzmike@gmail.com
+        sudo kubectl apply -f manifests/app1-deployment.yaml
+        sudo kubectl apply -f manifests/app2-deployment.yaml
+        sudo kubectl apply -f manifests/app3-deployment.yaml
+        sudo kubectl apply -f manifests/app1-service.yaml
+        sudo kubectl apply -f manifests/app2-service.yaml
+        sudo kubectl apply -f manifests/app3-service.yaml
+        sudo kubectl apply -f manifests/app1-ingress.yaml
+        sudo kubectl apply -f manifests/app2-ingress.yaml
+        sudo kubectl apply -f manifests/app3-ingress.yaml
+      SHELL
+      node1.vm.synced_folder "manifests", "/home/vagrant/manifests"
+    end
+
+  config.vm.define "mchatzipSW" do |node2|
+    node2.vm.box = "bento/ubuntu-20.04"
+    node2.vm.hostname = "mchatzipSW"
+    node2.vm.network "private_network", ip: "192.168.56.111"
+    node2.vm.provider "virtualbox" do |vb|
+      vb.name = "mchatzipSW"
+      vb.memory = 1024
+      vb.cpus = 1
+    end
+    node2.vm.provision "shell", inline: <<-SHELL
+      sudo sed -i 's/^PasswordAuthentication.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+      sudo systemctl restart sshd
+      export TOKEN_FILE="/vagrant/scripts/node-token"
+      curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent --server https://192.168.56.110:6443 --token-file $TOKEN_FILE --node-ip=192.168.56.111" sh -
+    SHELL
+  end
+end

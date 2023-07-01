@@ -1,0 +1,1 @@
+{"virtualbox":{"/home/vagrant/manifests":{"guestpath":"/home/vagrant/manifests","hostpath":"/home/mchatzip/IoT42/manifests","disabled":false,"__vagrantfile":true},"/vagrant":{"guestpath":"/vagrant","hostpath":"/home/mchatzip/IoT42","disabled":false,"__vagrantfile":true}}}

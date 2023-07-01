@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      imagePullSecrets:
+        - name: ghcr-credentials      
+      containers:
+        - name: app1-container
+          image: ghcr.io/mikechatzis/app1-image:latest
+          ports:
+            - containerPort: 3000
